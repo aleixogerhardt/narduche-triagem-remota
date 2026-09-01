@@ -1,344 +1,232 @@
-# Narduche v6 — Triagem Remota
+# Narduche — Triagem Remota
 
-Reestruturação profissional do MVP de triagem remota. Esta versão foi criada especificamente para corrigir o maior problema da v5: **dados e chamados não podem depender do navegador onde foram criados**.
+Sistema web desenvolvido para otimizar o processo de atendimento técnico de impressoras por meio de uma triagem remota guiada.
 
-## Mudança principal da v6
+A plataforma permite que usuários realizem verificações iniciais antes da abertura de um chamado técnico, possibilitando a resolução de problemas simples remotamente e fornecendo informações mais completas para a equipe técnica quando uma intervenção for necessária.
 
-A v5 possuía um modo `demo` que usava `localStorage`. Esse armazenamento é local de cada navegador, portanto um chamado criado em um PC não aparecia automaticamente em outro PC ou celular.
+## Objetivo
 
-A v6 **não possui mais banco operacional em localStorage**.
+O Narduche — Triagem Remota busca reduzir atendimentos presenciais desnecessários e melhorar a qualidade das informações recebidas pela equipe técnica.
 
-```text
-Celular ─┐
-         ├── Internet ── Supabase ── PostgreSQL
-PC ──────┤                    │
-Tablet ──┘                    ├── Auth
-                              ├── RLS
-                              ├── Realtime
-                              └── Storage privado
-```
+O sistema oferece um fluxo estruturado no qual o usuário seleciona o equipamento, informa o problema e realiza uma sequência de verificações orientadas.
 
-Todos os dispositivos autorizados consultam a mesma base de dados.
+Caso o problema não seja solucionado durante a triagem, um chamado pode ser criado com as informações coletadas durante o processo.
 
----
+## Principais funcionalidades
 
-## Stack
+* Autenticação de usuários;
+* Controle de acesso por perfil;
+* Cadastro e gerenciamento de empresas;
+* Cadastro e gerenciamento de impressoras;
+* Triagem guiada de problemas;
+* Registro das respostas da triagem;
+* Resolução remota de ocorrências;
+* Abertura e acompanhamento de chamados;
+* Atribuição de chamados para técnicos;
+* Atualização de status dos atendimentos;
+* Envio de evidências e anexos;
+* Atualização de chamados em tempo real;
+* Histórico de eventos;
+* Registro de auditoria;
+* Interface responsiva para computadores e dispositivos móveis.
+
+## Tecnologias
 
 ### Frontend
-- React 19 + TypeScript
-- Vite 8
-- React Router 7
-- Tailwind CSS 4
-- Motion for React (sucessor do Framer Motion)
-- Radix UI primitives
-- Lucide React
-- Sonner
-- React Hook Form + Zod
-- TanStack Query v5
 
-### Backend / dados
-- Supabase
-- PostgreSQL
-- Supabase Auth
-- Row Level Security (RLS)
-- PostgreSQL RPCs transacionais
-- Supabase Realtime
-- Supabase Storage privado
-- auditoria em `audit_log`
+* React
+* TypeScript
+* Vite
+* React Router
+* Tailwind CSS
+* TanStack Query
+* React Hook Form
+* Zod
+* Radix UI
+* Motion
+* Lucide React
+* Sonner
 
----
+### Backend e banco de dados
 
-# 1. Requisitos
+* Supabase
+* PostgreSQL
+* Supabase Auth
+* Row Level Security (RLS)
+* PostgreSQL RPC
+* Supabase Realtime
+* Supabase Storage
 
-Use **Node.js 22 ou superior**.
+## Arquitetura
 
-Confirme:
+A aplicação utiliza uma arquitetura cliente-servidor, com o frontend desenvolvido em React e os serviços de backend fornecidos pelo Supabase.
 
-```bash
-node -v
-npm -v
+```text
+Computador ─┐
+Celular ────┼── Internet ── Supabase ── PostgreSQL
+Tablet ─────┘                    │
+                                ├── Authentication
+                                ├── Row Level Security
+                                ├── Realtime
+                                └── Storage
 ```
 
----
+Os dispositivos conectados ao sistema utilizam uma base de dados centralizada, permitindo que informações sobre empresas, equipamentos, triagens e chamados sejam compartilhadas entre usuários autorizados.
 
-# 2. Instalar o frontend
+## Banco de dados
 
-Na pasta do projeto:
+Entre as principais entidades do sistema estão:
+
+* Empresas;
+* Usuários;
+* Impressoras;
+* Categorias de problemas;
+* Etapas de triagem;
+* Sessões de triagem;
+* Respostas;
+* Resoluções remotas;
+* Chamados;
+* Eventos dos chamados;
+* Anexos;
+* Registros de auditoria.
+
+O banco utiliza relacionamentos, restrições de integridade, índices e políticas de Row Level Security para controle de acesso aos dados.
+
+A documentação detalhada está disponível em:
+
+```text
+docs/DATABASE.md
+docs/ERD.md
+docs/SECURITY.md
+docs/ARCHITECTURE.md
+```
+
+## Controle de acesso
+
+O sistema possui diferentes níveis de acesso.
+
+**Cliente**
+
+Pode acessar os equipamentos vinculados à sua empresa, realizar triagens e acompanhar seus chamados.
+
+**Técnico**
+
+Pode visualizar chamados de suporte, assumir atendimentos e atualizar seus respectivos status.
+
+**Administrador**
+
+Possui acesso às funcionalidades administrativas do sistema, incluindo gerenciamento de empresas e equipamentos.
+
+As regras de autorização também são aplicadas no banco de dados por meio de políticas de Row Level Security.
+
+## Interface
+
+A interface foi desenvolvida seguindo uma abordagem Mobile First e se adapta a diferentes tamanhos de tela.
+
+Entre os recursos utilizados estão:
+
+* Navegação adaptada para desktop e dispositivos móveis;
+* Formulários com validação;
+* Feedback visual das operações;
+* Fluxo de triagem em etapas;
+* Indicadores de progresso;
+* Componentes acessíveis;
+* Animações e microinterações.
+
+## Executando o projeto
+
+### Requisitos
+
+* Node.js 22 ou superior
+* npm
+* Projeto Supabase configurado
+
+Clone o repositório e instale as dependências:
 
 ```bash
+git clone https://github.com/bypain/narduche-triagem-remota.git
+cd narduche-triagem-remota
 npm install
 ```
 
-Depois:
+Crie o arquivo `.env.local` utilizando `.env.example` como referência:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Em seguida:
 
 ```bash
 npm run dev
 ```
 
-O Vite mostrará algo como:
+## Banco de dados
+
+As migrations necessárias estão disponíveis em:
 
 ```text
-http://localhost:5173
+supabase/migrations/
 ```
 
-Por padrão o servidor aceita acesso pela rede local, então no celular também poderá ser aberto pelo IP do computador, por exemplo:
-
-```text
-http://192.168.0.20:5173
-```
-
----
-
-# 3. Criar o banco Supabase
-
-Crie um projeto no Supabase.
-
-Depois copie `.env.example` para `.env.local`:
-
-### Windows CMD
-
-```bat
-copy .env.example .env.local
-```
-
-### PowerShell
-
-```powershell
-Copy-Item .env.example .env.local
-```
-
-Preencha:
-
-```env
-VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=SUA_CHAVE_PUBLICA
-```
-
-**Nunca use `service_role` no frontend.**
-
----
-
-# 4. Aplicar o banco profissional
-
-A estrutura está versionada em `supabase/migrations`.
-
-Faça login no CLI:
+Para aplicar a estrutura utilizando o Supabase CLI:
 
 ```bash
 npx supabase login
-```
-
-Vincule ao projeto:
-
-```bash
 npx supabase link --project-ref SEU_PROJECT_REF
-```
-
-Aplique todas as migrations:
-
-```bash
 npx supabase db push
 ```
 
-Arquivos aplicados:
+## Qualidade do projeto
 
-```text
-001_initial_schema.sql
-002_catalog_seed.sql
-003_storage.sql
-```
-
-Isso cria tabelas, tipos, índices, constraints, RLS, funções transacionais, auditoria, catálogo de triagem, bucket privado e políticas de arquivos.
-
----
-
-# 5. Criar usuários
-
-No painel Supabase:
-
-```text
-Authentication > Users > Add user
-```
-
-Ao criar um usuário, um trigger cria automaticamente uma linha em `public.profiles`, inicialmente **inativa**. Isso evita que uma conta nova obtenha acesso ao sistema antes de ser vinculada corretamente.
-
-Depois execute e adapte:
-
-```text
-supabase/BOOTSTRAP_USERS.sql
-```
-
-O primeiro administrador é promovido manualmente uma única vez. Depois o sistema pode ser evoluído para uma tela de gestão de usuários.
-
-Para cliente, é obrigatório definir uma empresa e ativar a conta.
-
----
-
-# 6. Rodar
+O projeto possui comandos para verificação de tipos, análise estática e geração do build de produção.
 
 ```bash
-npm run dev
-```
-
-Para verificar tipos:
-
-```bash
-npm run typecheck
-```
-
-Para gerar a versão de produção:
-
-```bash
-npm run build
-```
-
-Para visualizar o build:
-
-```bash
-npm run preview
-```
-
----
-
-# 7. Como provar ao professor que o banco é compartilhado
-
-1. Abra a Narduche no celular e entre como cliente.
-2. Faça uma triagem completa e abra um chamado.
-3. No computador, entre com um usuário técnico.
-4. Abra **Chamados**.
-5. O mesmo protocolo deve aparecer.
-6. No PC, clique em **Assumir chamado** e altere para **Em atendimento**.
-7. No celular, reabra o chamado: o status virá do mesmo PostgreSQL.
-
-Isso demonstra na prática que não existe mais dependência de `localStorage`.
-
----
-
-# 8. Banco de dados
-
-Principais tabelas:
-
-```text
-companies
-profiles
-printers
-issue_categories
-triage_steps
-triage_sessions
-triage_answers
-remote_resolutions
-tickets
-ticket_events
-ticket_attachments
-audit_log
-```
-
-### Princípios implementados
-
-- UUID como identificador de domínio;
-- PK e FK explícitas;
-- `ON DELETE RESTRICT` para dados históricos relevantes;
-- constraints `UNIQUE` e `CHECK`;
-- índices voltados aos filtros reais da aplicação;
-- timestamps com trigger de atualização;
-- transações nas operações críticas;
-- `SELECT ... FOR UPDATE` para evitar corrida em finalização de triagem/chamado;
-- RLS como autorização no banco;
-- audit log para alterações críticas;
-- bucket privado para evidências;
-- URLs assinadas de curta duração;
-- Realtime nos chamados.
-
-Veja `docs/DATABASE.md`, `docs/ERD.md`, `docs/SECURITY.md` e `supabase/VERIFY_DATABASE.sql`.
-
----
-
-# 9. Interface
-
-A v6 também abandona a abordagem de CDN/JavaScript puro da versão anterior e passa a usar build moderno.
-
-O visual é **Mobile First**, com:
-
-- sidebar no desktop;
-- navegação inferior no celular;
-- Motion para transições de página e microinterações;
-- cards animados;
-- wizard de triagem com progresso animado;
-- feedback com Sonner;
-- componentes acessíveis baseados em Radix;
-- Tailwind para responsividade e design system;
-- ícones Lucide;
-- formulários validados com Zod.
-
----
-
-# 10. Estrutura
-
-```text
-Narduche-Triagem-Remota-v6/
-├── package.json
-├── vite.config.ts
-├── .env.example
-├── src/
-│   ├── components/
-│   │   ├── brand/
-│   │   ├── layout/
-│   │   └── ui/
-│   ├── context/
-│   ├── lib/
-│   ├── pages/
-│   ├── services/
-│   ├── types/
-│   ├── main.tsx
-│   └── router.tsx
-├── supabase/
-│   ├── migrations/
-│   ├── BOOTSTRAP_USERS.sql
-│   └── config.toml
-└── docs/
-    ├── ARCHITECTURE.md
-    ├── DATABASE.md
-    ├── ERD.md
-    ├── SECURITY.md
-    └── TESTING.md
-```
-
----
-
-## Observação importante
-
-Nenhum projeto pode ser prometido como “zero bugs” sem executar o build e os testes no ambiente final com as dependências instaladas e um Supabase real. Por isso, a v6 foi estruturada para permitir `typecheck`, build reproduzível, migrations versionadas e teste multi-dispositivo antes da apresentação.
-
-# 11. GitHub
-
-Você pode publicar o estado final como primeiro commit. Para uma entrega acadêmica, é melhor continuar fazendo commits reais e descritivos a partir desse ponto do que inventar um histórico retroativo.
-
-Guia completo: `docs/GITHUB.md`.
-
-Antes do primeiro push:
-
-```bash
-npm install
-npm run test:smoke
 npm run typecheck
 npm run lint
 npm run build
 ```
 
-Depois:
+## Estrutura principal
 
-```bash
-git init
-git add .
-git commit -m "feat: entrega inicial da Narduche v6"
-git branch -M main
-git remote add origin URL_DO_REPOSITORIO
-git push -u origin main
+```text
+narduche-triagem-remota/
+├── src/
+│   ├── components/
+│   ├── context/
+│   ├── lib/
+│   ├── pages/
+│   ├── services/
+│   └── types/
+│
+├── supabase/
+│   ├── migrations/
+│   ├── BOOTSTRAP_USERS.sql
+│   └── config.toml
+│
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── DATABASE.md
+│   ├── ERD.md
+│   ├── SECURITY.md
+│   └── TESTING.md
+│
+├── tests/
+├── package.json
+└── vite.config.ts
 ```
 
-O `.gitignore` exclui arquivos de ambiente, `node_modules` e builds. **Nunca envie `.env.local`, senha ou `service_role` para o GitHub.**
+## Segurança
 
-## Validação desta cópia
+As credenciais utilizadas localmente não são armazenadas no repositório.
 
-O smoke test estrutural e a análise sintática dos arquivos TypeScript foram executados antes do empacotamento. O `npm install` completo não pôde ser finalizado no ambiente de geração por indisponibilidade de acesso ao registry; por isso, execute `npm install`, `npm run typecheck`, `npm run lint` e `npm run build` na sua máquina antes da apresentação e antes de marcar uma release no GitHub.
+Arquivos de ambiente, como `.env.local`, são ignorados pelo Git e o frontend utiliza somente a chave pública destinada ao cliente.
 
+O controle de acesso aos dados é realizado por meio da autenticação e das políticas de Row Level Security configuradas no PostgreSQL.
+
+---
+
+**Narduche — Triagem Remota**
+
+Sistema de triagem remota para otimização do atendimento técnico de impressoras.
